@@ -1,0 +1,72 @@
+diff -ur iputils-s20101006-old/ping.c iputils-s20101006/ping.c
+--- iputils-s20101006-old/ping.c	2010-10-06 21:59:20.000000000 +1000
++++ iputils-s20101006/ping.c	2013-01-12 19:31:33.000000000 +1000
+@@ -511,7 +511,7 @@
+ 
+ 	setup(icmp_sock);
+ 
+-	main_loop(icmp_sock, packet, packlen);
++	return main_loop(icmp_sock, packet, packlen);
+ }
+ 
+ 
+diff -ur iputils-s20101006-old/ping_common.c iputils-s20101006/ping_common.c
+--- iputils-s20101006-old/ping_common.c	2010-10-06 21:59:20.000000000 +1000
++++ iputils-s20101006/ping_common.c	2013-01-12 20:51:20.000000000 +1000
+@@ -16,7 +16,7 @@
+ 
+ 
+ /* counters */
+-long npackets;			/* max packets to transmit */
++long npackets = 1;		/* max packets to transmit */
+ long nreceived;			/* # of packets we got back */
+ long nrepeats;			/* number of duplicates */
+ long ntransmitted;		/* sequence # for outbound packets = #sent */
+@@ -543,7 +543,7 @@
+ 	}
+ }
+ 
+-void main_loop(int icmp_sock, __u8 *packet, int packlen)
++int main_loop(int icmp_sock, __u8 *packet, int packlen)
+ {
+ 	char addrbuf[128];
+ 	char ans_data[4096];
+@@ -553,6 +553,7 @@
+ 	int cc;
+ 	int next;
+ 	int polling;
++	struct timeval *recv_timep = NULL;
+ 
+ 	iov.iov_base = (char *)packet;
+ 
+@@ -620,7 +621,6 @@
+ 		}
+ 
+ 		for (;;) {
+-			struct timeval *recv_timep = NULL;
+ 			struct timeval recv_time;
+ 			int not_ours = 0; /* Raw socket can receive messages
+ 					   * destined to other running pings. */
+@@ -684,7 +684,9 @@
+ 			 * and return to pinger. */
+ 		}
+ 	}
+-	finish();
++	//finish();
++	/* Return an estimate of the single trip time */
++	return (recv_timep->tv_sec * 1000000 + recv_timep->tv_usec)/20000;
+ }
+ 
+ int gather_statistics(__u8 *icmph, int icmplen,
+diff -ur iputils-s20101006-old/ping_common.h iputils-s20101006/ping_common.h
+--- iputils-s20101006-old/ping_common.h	2010-10-06 21:59:20.000000000 +1000
++++ iputils-s20101006/ping_common.h	2013-01-12 19:25:04.000000000 +1000
+@@ -197,7 +197,7 @@
+ extern int pinger(void);
+ extern void sock_setbufs(int icmp_sock, int alloc);
+ extern void setup(int icmp_sock);
+-extern void main_loop(int icmp_sock, __u8 *buf, int buflen) __attribute__((noreturn));
++extern int main_loop(int icmp_sock, __u8 *buf, int buflen);
+ extern void finish(void) __attribute__((noreturn));
+ extern void status(void);
+ extern void common_options(int ch);
