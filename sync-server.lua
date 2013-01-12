@@ -53,7 +53,10 @@ function serve(fd)
 			enabled = false
 			vlc.deactivate()
 		else
-			local t = math.floor(vlc.var.get(input, "time"))
+			local latency = os.execute(
+			    "vlc-sync-ping -W 5 localhost") / 25.6
+			local t = math.floor(1000 * vlc.var.get(input, "time"))
+			t = t + latency
 			vlc.net.send(fd, string.format("%i\n", t))
 			vlc.keep_alive()
 			os.execute("sleep 1") -- XXX won't work on Windows

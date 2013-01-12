@@ -59,17 +59,47 @@ function client(fd)
 				vlc.keep_alive()
 				local i, j = string.find(str, "%d+\n")
 				local remote_time = tonumber(string.sub(str, i, j))
-				local local_time = math.floor(vlc.var.get(input, "time"))
+				local local_time = math.floor(1000 * vlc.var.get(input, "time"))
 
-				if math.abs(remote_time - local_time) > 1 then
+				if math.abs(remote_time - local_time) > tonumber(jitter) then
 					dlog(string.format("updating time from %i to %i",
 						local_time, remote_time))
-					vlc.var.set(input, "time", remote_time)
+					vlc.var.set(input, "time", remote_time/1000)
 				end
 			end
 		end
 	end
 	vlc.net.close(fd)
+end
+
+function update_params()
+	server = server_w:get_text()
+	jitter = jitter_w:get_text()
+	vlc.msg.info(server)
+	vlc.msg.info(jitter)
+	conf_d:delete()
+
+	local fd = vlc.net.connect_tcp("localhost", 1234)
+
+	if fd < 0 then
+		dlog("connect_tcp failed")
+		local dialog = vlc.dialog("Sync Client")
+		dialog:add_label("Connection failed.", 1, 1, 1, 1)
+		dialog:add_button("Close", vlc.deactivate, 2, 1, 1, 1)
+		dialog:show()
+	else	
+		client(fd)
+	end
+end
+
+function set_params()
+	conf_d = vlc.dialog("Sync Client")
+	conf_d:add_label("Connect to:", 1, 1, 1, 1)
+	conf_d:add_label("Jitter tolerance (ms):", 1, 2, 1, 1)
+	server_w = conf_d:add_text_input("localhost", 2, 1, 1, 1)
+	jitter_w = conf_d:add_text_input("250", 2, 2, 1, 1)
+	conf_d:add_button("OK", update_params, 3, 1, 1, 1)
+	conf_d:show()
 end
 
 function activate()
@@ -83,16 +113,7 @@ function activate()
 		dialog:add_button("Close", vlc.deactivate, 2, 1, 1, 1)
 		dialog:show()
 	else
-		local fd = vlc.net.connect_tcp("localhost", 1234)
-		if fd < 0 then
-			dlog("connect_tcp failed")
-			local dialog = vlc.dialog("Sync Client")
-			dialog:add_label("Connection failed.", 1, 1, 1, 1)
-			dialog:add_button("Close", vlc.deactivate, 2, 1, 1, 1)
-			dialog:show()
-		else
-			client(fd)
-		end
+		set_params()
 	end
 end
 
