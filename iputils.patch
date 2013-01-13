@@ -12,7 +12,7 @@ diff -ur iputils-s20101006-old/ping.c iputils-s20101006/ping.c
  
 diff -ur iputils-s20101006-old/ping_common.c iputils-s20101006/ping_common.c
 --- iputils-s20101006-old/ping_common.c	2010-10-06 21:59:20.000000000 +1000
-+++ iputils-s20101006/ping_common.c	2013-01-12 20:51:20.000000000 +1000
++++ iputils-s20101006/ping_common.c	2013-01-13 09:46:38.000000000 +1000
 @@ -16,7 +16,7 @@
  
  
@@ -47,14 +47,16 @@ diff -ur iputils-s20101006-old/ping_common.c iputils-s20101006/ping_common.c
  			struct timeval recv_time;
  			int not_ours = 0; /* Raw socket can receive messages
  					   * destined to other running pings. */
-@@ -684,7 +684,9 @@
+@@ -684,7 +684,11 @@
  			 * and return to pinger. */
  		}
  	}
 -	finish();
 +	//finish();
 +	/* Return an estimate of the single trip time */
-+	return (recv_timep->tv_sec * 1000000 + recv_timep->tv_usec)/20000;
++	return recv_timep ? 
++		(recv_timep->tv_sec * 1000000 + recv_timep->tv_usec)/20000 :
++		-1;
  }
  
  int gather_statistics(__u8 *icmph, int icmplen,
