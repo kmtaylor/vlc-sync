@@ -79,7 +79,7 @@ function update_params()
 	vlc.msg.info(jitter)
 	conf_d:delete()
 
-	local fd = vlc.net.connect_tcp("localhost", 1234)
+	local fd = vlc.net.connect_tcp(server, 1234)
 
 	if fd < 0 then
 		dlog("connect_tcp failed")
