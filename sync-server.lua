@@ -55,7 +55,7 @@ function serve(fd)
 		else
 			vlc.keep_alive()
 			local latency = os.execute(
-			    "vlc-sync-ping -W 2 localhost") / 25.6
+			    "vlc-sync-ping -c 1 -w 2 localhost") / 25.6
 			if latency < 2550 then
 				local t = math.floor(1000 * 
 						vlc.var.get(input, "time"))
