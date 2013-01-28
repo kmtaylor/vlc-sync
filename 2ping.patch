@@ -1,13 +1,16 @@
-Only in 2ping-2.0: 2ping
-diff -ur 2ping-2.0-old/src/2ping.pl 2ping-2.0/src/2ping.pl
---- 2ping-2.0-old/src/2ping.pl	2012-04-23 09:30:30.000000000 +1000
-+++ 2ping-2.0/src/2ping.pl	2013-01-13 22:55:02.000000000 +1000
-@@ -1464,7 +1464,7 @@
+diff -ur 2ping-2.0/src/2ping.pl 2ping-2.0-new/src/2ping.pl
+--- 2ping-2.0/src/2ping.pl	2012-04-23 09:30:30.000000000 +1000
++++ 2ping-2.0-new/src/2ping.pl	2013-01-19 14:46:08.179216200 +1000
+@@ -1464,7 +1464,11 @@
      sqrt(lazydiv($pingsinrttsumsq, $pingsin) - (lazydiv($pingsinrttsum, $pingsin) ** 2))
    );
    printf("%d raw packets transmitted, %d received\n", $packetsout, $packetsin);
 -  exit(0);
-+  exit(lazydiv($pingsinrttsum, $pingsin)/20);
++  if ($packetsin) {
++    exit(lazydiv($pingsinrttsum, $pingsin)/20);
++  } else {
++    exit(255);
++  }
  }
  
  # ALRM - manually sends a new ping
